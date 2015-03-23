@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- variable properties -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-25(%d{HH:mm:ss.SSS} [%thread]) %-5level %logger{36}\(%4L\) - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- ALL > TRACE > DEBUG > INFO > WARN > ERROR > OFF -->
+
+    <logger name="org.code4seoul.team5" level="ALL" />
+
+    <!-- Framework Category -->
+    <logger name="org.apache" level="WARN" />
+
+    <logger name="org.springframework" level="WARN" />
+
+    <root level="WARN">
+        <appender-ref ref="CONSOLE" />
+    </root>
+</configuration>
