@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.code4seoul.team5.data.crawler.domain.daum.Item;
 import org.code4seoul.team5.data.crawler.domain.daum.Response;
@@ -21,6 +22,7 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.util.List;
@@ -92,6 +94,8 @@ public class ConstructionInfoGenerator {
                 .map(construction -> {
                     log.debug("construction: {}", construction);
 
+                    construction.setGroup(Group.NO_ADDR);
+
                     switch (construction.getOfficeType()) {
                         case 국가기관: {
                             String officeName = construction.getOffice();
@@ -111,29 +115,29 @@ public class ConstructionInfoGenerator {
                         case 교육기관:
                         case 공기업:
                         case 기타기관: {
-                            findCoordinates(construction, Iterables.getLast(officeSplitter.split(construction.getOffice())));
+//                            findCoordinates(construction, Iterables.getLast(officeSplitter.split(construction.getOffice())));
                             break;
                         }
                         case 기타공공기관:
                         case 준정부기관:
                         case 지자체: {
-                            String officeName = Iterables.getLast(officeSplitter.split(construction.getOffice()));
-                            String firstName = "", secondName = "";
-                            int cnt = 0;
-                            for (String name : officeSplitter.split(construction.getName())) {
-                                if (cnt++ == 0) {
-                                    firstName = name;
-                                } else {
-                                    secondName = name;
-                                    break;
-                                }
-                            }
-
-                            findCoordinates(construction, addrJoiner.join(officeName, firstName, secondName));
-
-                            if (construction.getGroup() == Group.NO_ADDR) {
-                                findCoordinates(construction, addrJoiner.join(officeName, firstName));
-                            }
+//                            String officeName = Iterables.getLast(officeSplitter.split(construction.getOffice()));
+//                            String firstName = "", secondName = "";
+//                            int cnt = 0;
+//                            for (String name : officeSplitter.split(construction.getName())) {
+//                                if (cnt++ == 0) {
+//                                    firstName = name;
+//                                } else {
+//                                    secondName = name;
+//                                    break;
+//                                }
+//                            }
+//
+//                            findCoordinates(construction, addrJoiner.join(officeName, firstName, secondName));
+//
+//                            if (construction.getGroup() == Group.NO_ADDR) {
+//                                findCoordinates(construction, addrJoiner.join(officeName, firstName));
+//                            }
 
                             break;
                         }
@@ -158,6 +162,16 @@ public class ConstructionInfoGenerator {
             } catch (IOException e) {
                 log.error("failed to write", e);
             }
+        }
+    }
+
+    public void findCoordinates(String jsonFile) {
+        try {
+            Gson gson = new GsonBuilder().create();
+
+            List<Construction> constructions = gson.fromJson(Files.newReader(new File(jsonFile), Charset.forName("UTF-8")), new TypeToken<List<Construction>>() {}.getType());
+        } catch (FileNotFoundException e) {
+            log.error("failed to load json", e);
         }
     }
 

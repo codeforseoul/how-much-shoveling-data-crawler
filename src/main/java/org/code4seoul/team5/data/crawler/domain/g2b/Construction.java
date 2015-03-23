@@ -43,4 +43,7 @@ public class Construction {
 
     @Element(required = false)
     private Group group;
+
+    @Element(required = false)
+    private String address;
 }
