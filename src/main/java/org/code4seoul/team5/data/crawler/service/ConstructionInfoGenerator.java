@@ -19,8 +19,6 @@ import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * Created by papillon212 on 15. 3. 21..
@@ -83,77 +81,79 @@ public class ConstructionInfoGenerator {
 
         log.debug("load fully");
 
-        Map<Group, List<Construction>> groupListMap = constructions.stream()
-                .map(construction -> {
-                    log.debug("construction: {}", construction);
+        constructions.forEach(construction -> {
+            log.debug("construction: {}", construction);
 
+            construction.setGroup(Group.NO_ADDR);
+
+            switch (construction.getOwnerType()) {
+                case 국가기관: {
+                    String officeName = construction.getOwnerName();
+                    if (officeName.indexOf("국방부") > -1 || officeName.indexOf("부대") > -1 || officeName.indexOf("국군") > -1) {
+                        construction.setGroup(Group.MILITARY);
+                    } else {
+                        construction.setGroup(Group.NO_ADDR);
+                    }
+                    break;
+                }
+                case 임의기관:
+                case 정부투자기관: {
                     construction.setGroup(Group.NO_ADDR);
-
-                    switch (construction.getOwnerType()) {
-                        case 국가기관: {
-                            String officeName = construction.getOwnerName();
-                            if (officeName.indexOf("국방부") > -1 || officeName.indexOf("부대") > -1 || officeName.indexOf("국군") > -1) {
-                                construction.setGroup(Group.MILITARY);
-                            } else {
-                                construction.setGroup(Group.NO_ADDR);
-                            }
-                            break;
-                        }
-                        case 임의기관:
-                        case 정부투자기관: {
-                            construction.setGroup(Group.NO_ADDR);
-                            break;
-                        }
-                        case 지방공기업:
-                        case 교육기관:
-                        case 공기업:
-                        case 기타기관: {
-                            findCoordinates(construction, Iterables.getLast(ownerSplitter.split(construction.getOwnerName())));
-                            break;
-                        }
-                        case 기타공공기관:
-                        case 준정부기관:
-                        case 지자체: {
-                            String ownerName = Iterables.getLast(ownerSplitter.split(construction.getOwnerName()));
-                            String firstName = "", secondName = "";
-                            int cnt = 0;
-                            for (String name : ownerSplitter.split(construction.getName())) {
-                                if (cnt++ == 0) {
-                                    firstName = name;
-                                } else {
-                                    secondName = name;
-                                    break;
-                                }
-                            }
-
-                            findCoordinates(construction, addrJoiner.join(ownerName, firstName, secondName));
-
-                            if (construction.getGroup() == Group.NO_ADDR) {
-                                findCoordinates(construction, addrJoiner.join(ownerName, firstName));
-                            }
-
+                    break;
+                }
+                case 지방공기업:
+                case 교육기관:
+                case 공기업:
+                case 기타기관: {
+                    findCoordinates(construction, Iterables.getLast(ownerSplitter.split(construction.getOwnerName())));
+                    break;
+                }
+                case 기타공공기관:
+                case 준정부기관:
+                case 지자체: {
+                    String ownerName = Iterables.getLast(ownerSplitter.split(construction.getOwnerName()));
+                    String firstName = "", secondName = "";
+                    int cnt = 0;
+                    for (String name : ownerSplitter.split(construction.getName())) {
+                        if (cnt++ == 0) {
+                            firstName = name;
+                        } else {
+                            secondName = name;
                             break;
                         }
                     }
-                    return construction;
-                })
-                .collect(Collectors.groupingBy(Construction::getGroup));
 
-        constructionSiteRepository.save(groupListMap.get(Group.NORMAL).stream().map(construction -> new ConstructionSite(
-                construction.getContractNo(),
-                construction.getName(),
-                construction.getLink(),
-                construction.getStartedAt(),
-                construction.getDuration(),
-                construction.getOwnerName(),
-                construction.getOwnerType().toString(),
-                construction.getCompany(),
-                construction.getAccuracy(),
-                construction.getAddress(),
-                construction.getTotalAmount(),
-                construction.getLat(),
-                construction.getLng()
-        )).collect(Collectors.toList()));
+                    findCoordinates(construction, addrJoiner.join(ownerName, firstName, secondName));
+
+                    if (construction.getGroup() == Group.NO_ADDR) {
+                        findCoordinates(construction, addrJoiner.join(ownerName, firstName));
+                    }
+
+                    break;
+                }
+            }
+            if (construction.getGroup() == Group.NORMAL) {
+                try {
+                    constructionSiteRepository.save(new ConstructionSite(
+                            construction.getContractNo(),
+                            construction.getName(),
+                            construction.getLink(),
+                            construction.getStartedAt(),
+                            construction.getDuration(),
+                            construction.getOwnerName(),
+                            construction.getOwnerType().toString(),
+                            construction.getCompany(),
+                            construction.getAccuracy(),
+                            construction.getAddress(),
+                            construction.getTotalAmount(),
+                            construction.getLat(),
+                            construction.getLng()
+                    ));
+                } catch (Exception e) {
+                    log.error("skip exception");
+                }
+            }
+        });
     }
 
     private void findCoordinates(Construction construction, String addr) {
@@ -195,18 +195,18 @@ public class ConstructionInfoGenerator {
             log.error("failed to find coordinates", e);
         }
 
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            //do nothing
-        }
-
         if (construction.getGroup() == null || construction.getGroup() == Group.NO_ADDR) {
             if (geocode != null && "OK".equals(geocode.getStatus()) && geocode.getResults().size() > 1) {
                 construction.setGroup(Group.MULTI_ADDR);
             } else {
                 construction.setGroup(Group.NO_ADDR);
             }
+        }
+
+        try {
+            Thread.sleep(construction.getGroup() == Group.NORMAL ? 2000 : 2500);
+        } catch (InterruptedException e) {
+            //do nothing
         }
     }
 }

@@ -36,7 +36,7 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(g2bRestEndpoint)
-                .setLogLevel(RestAdapter.LogLevel.BASIC)
+//                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .setConverter(new SimpleXMLConverter())
                 .build();
         return adapter;
@@ -52,7 +52,7 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(googleMapRestEndpoint)
-                .setLogLevel(RestAdapter.LogLevel.FULL)
+//                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .setConverter(new GsonConverter(new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()))
                 .build();
         return adapter;
@@ -68,7 +68,7 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(daumRestEndpoint)
-//                .setLogLevel(RestAdapter.LogLevel.FULL)
+//                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .build();
         return adapter;
     }
