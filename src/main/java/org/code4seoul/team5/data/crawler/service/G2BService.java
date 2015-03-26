@@ -12,7 +12,7 @@ public interface G2BService {
     @GET("/openapi/service/rest/CntrctInfoService/getCntrctInfoListFcltyCntrctSttus")
     public ConstructionList fetchConstructionContracts(
             @Query("sDate") String sDate,
-            @Query("sDate") String eDate,
+            @Query("eDate") String eDate,
             @Query("numOfRows") int numOfRows,
             @Query("pageNo") int pageNo,
             @Query(value = "ServiceKey", encodeValue = false) String serviceKey

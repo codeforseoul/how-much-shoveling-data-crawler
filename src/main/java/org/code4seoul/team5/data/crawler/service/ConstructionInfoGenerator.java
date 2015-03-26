@@ -3,10 +3,8 @@ package org.code4seoul.team5.data.crawler.service;
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
-import com.google.common.io.Files;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import lombok.extern.slf4j.Slf4j;
+import org.code4seoul.team5.data.crawler.domain.ConstructionSite;
 import org.code4seoul.team5.data.crawler.domain.daum.Item;
 import org.code4seoul.team5.data.crawler.domain.daum.Response;
 import org.code4seoul.team5.data.crawler.domain.g2b.Construction;
@@ -15,14 +13,11 @@ import org.code4seoul.team5.data.crawler.domain.g2b.Group;
 import org.code4seoul.team5.data.crawler.domain.gmap.Coordinates;
 import org.code4seoul.team5.data.crawler.domain.gmap.Geocode;
 import org.code4seoul.team5.data.crawler.domain.gmap.Results;
-import org.joda.time.DateTime;
+import org.code4seoul.team5.data.crawler.repository.ConstructionSiteRepository;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.inject.Inject;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.Charset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -52,9 +47,12 @@ public class ConstructionInfoGenerator {
     @Inject
     private DaumService daumService;
 
-    private Splitter officeSplitter = Splitter.onPattern("\\s+");
+    private Splitter ownerSplitter = Splitter.onPattern("\\s+");
 
     private Joiner addrJoiner = Joiner.on(" ");
+
+    @Inject
+    private ConstructionSiteRepository constructionSiteRepository;
 
     public int totalCnt(String startDate, String endDate) {
         log.debug("startDate: {}, endDate: {}", startDate, endDate);
@@ -69,10 +67,7 @@ public class ConstructionInfoGenerator {
         return body.getTotalCount();
     }
 
-    public void crawlG2B(DateTime from, int durationWeeks) {
-        String startDate = from.toString("yyyyMMdd");
-        String endDate = from.plusWeeks(durationWeeks).toString("yyyyMMdd");
-
+    public void crawlG2B(String startDate, String endDate) {
         int totalCount = totalCnt(startDate, endDate);
 
         log.debug("totalCount: {}", totalCount);
@@ -88,13 +83,13 @@ public class ConstructionInfoGenerator {
 
         log.debug("load fully");
 
-        Map<Group, List<Construction>> groupListMap = constructions.parallelStream()
+        Map<Group, List<Construction>> groupListMap = constructions.stream()
                 .map(construction -> {
                     log.debug("construction: {}", construction);
 
-                    switch (construction.getOfficeType()) {
+                    switch (construction.getOwnerType()) {
                         case 국가기관: {
-                            String officeName = construction.getOffice();
+                            String officeName = construction.getOwnerName();
                             if (officeName.indexOf("국방부") > -1 || officeName.indexOf("부대") > -1 || officeName.indexOf("국군") > -1) {
                                 construction.setGroup(Group.MILITARY);
                             } else {
@@ -111,16 +106,16 @@ public class ConstructionInfoGenerator {
                         case 교육기관:
                         case 공기업:
                         case 기타기관: {
-                            findCoordinates(construction, Iterables.getLast(officeSplitter.split(construction.getOffice())));
+                            findCoordinates(construction, Iterables.getLast(ownerSplitter.split(construction.getOwnerName())));
                             break;
                         }
                         case 기타공공기관:
                         case 준정부기관:
                         case 지자체: {
-                            String officeName = Iterables.getLast(officeSplitter.split(construction.getOffice()));
+                            String ownerName = Iterables.getLast(ownerSplitter.split(construction.getOwnerName()));
                             String firstName = "", secondName = "";
                             int cnt = 0;
-                            for (String name : officeSplitter.split(construction.getName())) {
+                            for (String name : ownerSplitter.split(construction.getName())) {
                                 if (cnt++ == 0) {
                                     firstName = name;
                                 } else {
@@ -129,10 +124,10 @@ public class ConstructionInfoGenerator {
                                 }
                             }
 
-                            findCoordinates(construction, addrJoiner.join(officeName, firstName, secondName));
+                            findCoordinates(construction, addrJoiner.join(ownerName, firstName, secondName));
 
                             if (construction.getGroup() == Group.NO_ADDR) {
-                                findCoordinates(construction, addrJoiner.join(officeName, firstName));
+                                findCoordinates(construction, addrJoiner.join(ownerName, firstName));
                             }
 
                             break;
@@ -142,23 +137,21 @@ public class ConstructionInfoGenerator {
                 })
                 .collect(Collectors.groupingBy(Construction::getGroup));
 
-        for (Group group : groupListMap.keySet()) {
-            Gson gson = new GsonBuilder().create();
-            String json = gson.toJson(groupListMap.get(group));
-
-            try {
-                File outputFile = new File(outputDir, startDate + "-" + endDate + "-" + group.name() + ".json");
-                if (!outputFile.getParentFile().exists()) {
-                    outputFile.getParentFile().mkdirs();
-                }
-                if (!outputFile.exists()) {
-                    outputFile.createNewFile();
-                }
-                Files.write(json, outputFile, Charset.forName("UTF-8"));
-            } catch (IOException e) {
-                log.error("failed to write", e);
-            }
-        }
+        constructionSiteRepository.save(groupListMap.get(Group.NORMAL).stream().map(construction -> new ConstructionSite(
+                construction.getContractNo(),
+                construction.getName(),
+                construction.getLink(),
+                construction.getStartedAt(),
+                construction.getDuration(),
+                construction.getOwnerName(),
+                construction.getOwnerType().toString(),
+                construction.getCompany(),
+                construction.getAccuracy(),
+                construction.getAddress(),
+                construction.getTotalAmount(),
+                construction.getLat(),
+                construction.getLng()
+        )).collect(Collectors.toList()));
     }
 
     private void findCoordinates(Construction construction, String addr) {
@@ -184,6 +177,16 @@ public class ConstructionInfoGenerator {
                     construction.setLat(location.getLat());
                     construction.setLng(location.getLng());
                     construction.setGroup(Group.NORMAL);
+
+                    String formattedAddress = results.getFormattedAddress();
+
+                    construction.setAddress(formattedAddress);
+                    final int[] accuracy = {0};
+                    ownerSplitter.split(addr).forEach(part -> {
+                        accuracy[0] += formattedAddress.indexOf(part) > -1 ? 1 : 0;
+                    });
+
+                    construction.setAccuracy(accuracy[0]);
                 }
             }
         } catch (Exception e) {

@@ -3,7 +3,7 @@ package org.code4seoul.team5.data.crawler.domain.g2b;
 /**
  * Created by papillon212 on 15. 3. 22..
  */
-public enum OfficeType {
+public enum OwnerType {
     국가기관,
     지자체,
     교육기관,

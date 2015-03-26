@@ -1,5 +1,7 @@
 package org.code4seoul.team5.data.crawler.config;
 
+import com.google.gson.FieldNamingPolicy;
+import com.google.gson.GsonBuilder;
 import com.squareup.okhttp.OkHttpClient;
 import lombok.extern.slf4j.Slf4j;
 import org.code4seoul.team5.data.crawler.service.DaumService;
@@ -10,6 +12,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import retrofit.RestAdapter;
 import retrofit.client.OkClient;
+import retrofit.converter.GsonConverter;
 import retrofit.converter.SimpleXMLConverter;
 
 /**
@@ -33,7 +36,7 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(g2bRestEndpoint)
-//                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setLogLevel(RestAdapter.LogLevel.BASIC)
                 .setConverter(new SimpleXMLConverter())
                 .build();
         return adapter;
@@ -49,7 +52,8 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(googleMapRestEndpoint)
-//                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setLogLevel(RestAdapter.LogLevel.FULL)
+                .setConverter(new GsonConverter(new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()))
                 .build();
         return adapter;
     }
