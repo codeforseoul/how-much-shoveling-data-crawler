@@ -1,6 +1,7 @@
 package org.code4seoul.team5.data.crawler;
 
 import lombok.extern.slf4j.Slf4j;
+import org.code4seoul.team5.data.crawler.domain.QueryPeriod;
 import org.code4seoul.team5.data.crawler.repository.QueryPeriodRepository;
 import org.code4seoul.team5.data.crawler.service.ConstructionInfoGenerator;
 import org.joda.time.DateTime;
@@ -41,6 +42,7 @@ public class Starter implements CommandLineRunner {
         }
 
         if (from.indexOf("2014") > -1) {
+            queryPeriodRepository.save(new QueryPeriod(from + "-" + to, from, to));
             constructionInfoGenerator.crawlG2B(from, to);
         }
     }
