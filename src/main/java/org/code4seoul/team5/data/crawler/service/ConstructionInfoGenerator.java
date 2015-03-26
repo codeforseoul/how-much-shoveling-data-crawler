@@ -14,6 +14,7 @@ import org.code4seoul.team5.data.crawler.domain.gmap.Coordinates;
 import org.code4seoul.team5.data.crawler.domain.gmap.Geocode;
 import org.code4seoul.team5.data.crawler.domain.gmap.Results;
 import org.code4seoul.team5.data.crawler.repository.ConstructionSiteRepository;
+import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -208,5 +209,11 @@ public class ConstructionInfoGenerator {
         } catch (InterruptedException e) {
             //do nothing
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(DateTime.now());
+        System.out.println(DateTime.now().minusWeeks(2));
+
     }
 }
