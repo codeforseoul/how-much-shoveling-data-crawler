@@ -24,8 +24,8 @@ public class Starter implements CommandLineRunner {
         String startDate = DateTime.parse("2015-01-01").toString("yyyyMMdd");
         String endDate = DateTime.parse("2015-01-2").toString("yyyyMMdd");
 
-//        constructionInfoGenerator.crawlG2B(startDate, endDate);
-        log.debug("total cnt: {}", constructionInfoGenerator.totalCnt(startDate, endDate));
+        constructionInfoGenerator.crawlG2B(startDate, endDate);
+//        log.debug("total cnt: {}", constructionInfoGenerator.totalCnt(startDate, endDate));
     }
 
     public static void main(String[] args) throws Exception {
