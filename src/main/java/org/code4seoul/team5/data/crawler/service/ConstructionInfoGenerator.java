@@ -87,6 +87,8 @@ public class ConstructionInfoGenerator {
                 .map(construction -> {
                     log.debug("construction: {}", construction);
 
+                    construction.setGroup(Group.NO_ADDR);
+
                     switch (construction.getOwnerType()) {
                         case 국가기관: {
                             String officeName = construction.getOwnerName();
