@@ -10,5 +10,5 @@ import retrofit.http.Query;
 public interface GoogleMapService {
 
     @GET("/maps/api/geocode/json")
-    public Geocode findCoordinates(@Query("address") String address, @Query("key") String key);
+    public Geocode findCoordinates(@Query("address") String address/*, @Query("key") String key*/);
 }

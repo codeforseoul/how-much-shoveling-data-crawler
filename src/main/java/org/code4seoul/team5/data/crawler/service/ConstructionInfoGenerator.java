@@ -172,7 +172,7 @@ public class ConstructionInfoGenerator {
                 construction.setLng(item.getLng());
                 construction.setGroup(Group.NORMAL);
             } else {
-                geocode = googleMapService.findCoordinates(addr, googleApiKey);
+                geocode = googleMapService.findCoordinates(addr/*, googleApiKey*/);
 
                 if (geocode != null && "OK".equals(geocode.getStatus()) && geocode.getResults().size() == 1) {
                     log.debug("addr: {}, geocode: {}", addr, geocode);

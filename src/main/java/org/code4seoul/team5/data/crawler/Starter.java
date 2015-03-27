@@ -32,7 +32,7 @@ public class Starter implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         DateTime startDate = DateTime.parse("2014-12-31");
-        String from = startDate.minusDays(10).toString("yyyyMMdd");
+        String from = startDate.minusDays(2).toString("yyyyMMdd");
         String to = startDate.toString("yyyyMMdd");
 
         boolean isNoUpdate = true;
@@ -41,8 +41,8 @@ public class Starter implements CommandLineRunner {
                 isNoUpdate = false;
                 break;
             } else {
-                startDate = startDate.minusDays(11);
-                from = startDate.minusDays(10).toString("yyyyMMdd");
+                startDate = startDate.minusDays(3);
+                from = startDate.minusDays(2).toString("yyyyMMdd");
                 to = startDate.toString("yyyyMMdd");
             }
         }
