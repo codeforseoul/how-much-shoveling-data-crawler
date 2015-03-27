@@ -52,7 +52,7 @@ public class RetrofitConfiguration {
         RestAdapter adapter = new RestAdapter.Builder()
                 .setClient(new OkClient(new OkHttpClient()))
                 .setEndpoint(googleMapRestEndpoint)
-                .setLogLevel(RestAdapter.LogLevel.BASIC)
+                .setLogLevel(RestAdapter.LogLevel.FULL)
                 .setConverter(new GsonConverter(new GsonBuilder().setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES).create()))
                 .build();
         return adapter;
