@@ -32,8 +32,8 @@ public class Starter implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         DateTime startDate = DateTime.parse("2014-12-31");
-        String from = startDate.toString("yyyyMMdd");
-        String to = startDate.minusWeeks(4).toString("yyyyMMdd");
+        String from = startDate.minusDays(10).toString("yyyyMMdd");
+        String to = startDate.toString("yyyyMMdd");
 
         boolean isNoUpdate = true;
         while (from.indexOf("2014") > -1) {
@@ -41,15 +41,15 @@ public class Starter implements CommandLineRunner {
                 isNoUpdate = false;
                 break;
             } else {
-                startDate = startDate.minusDays(29);
-                from = startDate.toString("yyyyMMdd");
-                to = startDate.minusWeeks(4).toString("yyyyMMdd");
+                startDate = startDate.minusDays(11);
+                from = startDate.minusDays(10).toString("yyyyMMdd");
+                to = startDate.toString("yyyyMMdd");
             }
         }
 
         if (!isNoUpdate) {
             queryPeriodRepository.save(new QueryPeriod(from + "-" + to, from, to));
-//            constructionInfoGenerator.crawlG2B(from, to);
+            constructionInfoGenerator.crawlG2B(from, to);
         }
     }
 }

@@ -33,6 +33,9 @@ public class ConstructionInfoGenerator {
     @Value("${daum.api.key}")
     private String daumApiKey;
 
+    @Value("${google.api.key}")
+    private String googleApiKey;
+
     @Value("${json.output.dir}")
     private String outputDir;
 
@@ -169,7 +172,7 @@ public class ConstructionInfoGenerator {
                 construction.setLng(item.getLng());
                 construction.setGroup(Group.NORMAL);
             } else {
-                geocode = googleMapService.findCoordinates(addr);
+                geocode = googleMapService.findCoordinates(addr, googleApiKey);
 
                 if (geocode != null && "OK".equals(geocode.getStatus()) && geocode.getResults().size() == 1) {
                     log.debug("addr: {}, geocode: {}", addr, geocode);
