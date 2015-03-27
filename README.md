@@ -5,4 +5,4 @@
 * Gradle 2.2+
 
 ## Usage
-cmd: gradle boorRun
+cmd: gradle bootRun
