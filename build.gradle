@@ -19,9 +19,6 @@ buildscript {
     }
 }
 
-ext {
-    queryDslVersion = "3.6.0"
-}
 
 repositories {
     mavenCentral()
@@ -29,10 +26,6 @@ repositories {
     maven { url "http://repo.spring.io/release" }
     maven { url "http://repo.spring.io/milestone" }
     maven { url "http://repo.spring.io/snapshot" }
-}
-
-configurations {
-    querydslapt
 }
 
 dependencies {

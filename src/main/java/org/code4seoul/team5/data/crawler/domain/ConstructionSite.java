@@ -37,4 +37,6 @@ public class ConstructionSite {
     private double lat;
 
     private double lng;
+
+    private String province;
 }

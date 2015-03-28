@@ -5,6 +5,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import lombok.extern.slf4j.Slf4j;
 import org.code4seoul.team5.data.crawler.domain.ConstructionSite;
+import org.code4seoul.team5.data.crawler.domain.Province;
 import org.code4seoul.team5.data.crawler.domain.daum.Item;
 import org.code4seoul.team5.data.crawler.domain.daum.Response;
 import org.code4seoul.team5.data.crawler.domain.g2b.Construction;
@@ -150,7 +151,8 @@ public class ConstructionInfoGenerator {
                             construction.getAddress(),
                             construction.getTotalAmount(),
                             construction.getLat(),
-                            construction.getLng()
+                            construction.getLng(),
+                            Province.match(construction.getAddress())
                     ));
                 } catch (Exception e) {
                     log.error("skip exception");

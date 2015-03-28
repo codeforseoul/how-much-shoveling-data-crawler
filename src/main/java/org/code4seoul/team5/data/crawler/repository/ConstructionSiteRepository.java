@@ -10,5 +10,5 @@ import java.util.List;
  */
 public interface ConstructionSiteRepository extends MongoRepository<ConstructionSite, String> {
 
-    public List<ConstructionSite> findByLat(double lat);
+    public List<ConstructionSite> findByAddressLike(String address);
 }
